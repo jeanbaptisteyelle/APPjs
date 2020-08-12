@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Colorlib Templates">
+    <meta name="author" content="Colorlib">
+    <meta name="keywords" content="Colorlib Templates">
+
+    <!-- Title Page-->
+    <title>everything is possible</title>
+
+    <!-- Icons font CSS-->
+    <link href="{% static 'regis/vendor/mdi-font/css/material-design-iconic-font.min.css' %}" rel="stylesheet" media="all">
+    <link href="{% static 'regis/vendor/font-awesome-4.7/css/font-awesome.min.css' %}" rel="stylesheet" media="all">
+    <!-- Font special for pages-->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Vendor CSS-->
+    <link href="{% static 'regis/vendor/select2/select2.min.css' %}" rel="stylesheet" media="all">
+    <link href="{% static 'regis/vendor/datepicker/daterangepicker.css' %}" rel="stylesheet" media="all">
+
+    <!-- Main CSS-->
+    <link href="{% static 'regis/css/main.css' %}" rel="stylesheet" media="all">
+</head>
+<body>
+    <div class="page-wrapper bg-gra-01 p-t-180 p-b-100 font-poppins">
+        <div class="wrapper wrapper--w780"> 
+            <div class="card card-3">
+                <div class="card-heading">
+                    <a class="navbar-brand" href="{% url 'index' %}" style="color: rgb(255, 0, 85);">Mediplus</a>
+                </div>
+                <div class="card-body">
+                    <h2 class="title">Login</h2>
+                    
+                    <a href="{% url 'register' %}"  class="card" style="width: 30rem; height: 1rem; color: rgb(10, 110, 110);">Create an account</a>             
+                    <form id="app">
+                        <div v-if="isSuccess" class="alert alert-success" role="alert">
+                            ${message} {{user.username}}
+                       </div>
+                       <div v-if="error" class="alert alert-danger" role="alert">
+                            ${message}
+                      </div>
+                        <div class="input-group">
+                            <input class="input--style-3" type="text" placeholder="Username" v-model ="username">
+                        </div>
+                        <div class="input-group">
+                            <input class="input--style-3" type="password" placeholder="Password" v-model ="password">
+                        </div>
+                        <div class="p-t-10">
+                        <button v-if="!isregister" class="btn btn--pill btn--green" v-on:click.prevent="conexion" type="submit">Submit</button>
+                        <button v-if="isregister" disabled v-on:click.prevent="conexion" class="btn btn--pill btn--green" type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Jquery JS-->
+    <script src="{% static 'js/axios.min.js' %}"></script>
+    <script src="{% static 'js/vuejs.js' %}"></script>
+    <script src="{% static 'regis/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <!-- Vendor JS-->
+    <script src="{% static 'regis/vendor/select2/select2.min.js' %}"></script>
+    <script src="{% static 'regis/vendor/datepicker/moment.min.js' %}"></script>
+    <script src="{% static 'regis/vendor/datepicker/daterangepicker.js' %}"></script>
+
+    <!-- Main JS-->
+    <script src="{% static 'regis/js/global.js' %}"></script>
+    <script>
+        new Vue({
+            el:'#app', 
+            data: {
+                username: '',
+                password: '',
+                message: '',
+                isregister: false,
+                isSuccess: false,
+                error: false,
+                },
+
+                delimiters: ["${", "}"],
+
+                methods: {
+                    conexion: function () {
+                        if(!this.isregister) {
+                            this.error = true
+                            this.isregister = false
+                            this.isSuccess = false                            
+                            if (this.username == " " || this.password == " "){
+                                this.message = " Veuillez saisir des informations correctes",
+                                this.error = true
+                                this.isregister = false
+                                this.isSuccess = false
+                            }
+                            else{
+                                let formData = new FormData()
+                                formData.append('username', this.username)
+                                formData.append('password', this.password)
+                                axios.defaults.xsrfCookieName = 'csrftoken'
+                                axios.defaults.xsrfHeaderName = 'X-CSRFToken'
+                                axios.post("{% url 'is_login' %}", formData, {})
+                                    .then(response => {
+                                        console.log(response)
+                                        this.isregister = false
+                                        if  (response.data.success){
+                                            this.isSuccess = true
+                                            this.error = false
+                                            this.message = response.data.message
+                                            this.success = response.data.success
+                                             
+                                            Swal.fire({
+                                                position: 'top',
+                                                icon: 'success',
+                                                title: this.message,
+                                                showConfirmButton: false,
+                                                timer: 2500
+                                            })
+                                            window.location.replace("{% url 'index' %}")
+                                        }else{
+                                            this.error = true
+                                            this.message = response.data.message
+                                            this.success = response.data.success
+                                            this.isSuccess = false
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: this.message,
+                                                text: 'Informations incorectes!',
+                                                footer: '<a href="{% url 'register' %} ">Créer un compte</a>'
+                                              })
+                                        }
+                                        console.log("success variable" + this.isSuccess)
+                                    })
+                                        .catch((err) => {
+                                            this.isregister = false
+                                            console.log(err)
+                                        })                   
+                            }
+                    }
+
+                }
+            }
+
+        })
+
+
+
+
+
+
+    </script>
+
+
+
+
+
+</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+
+</html>
+<!-- end document-->
